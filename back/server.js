@@ -1,57 +1,55 @@
-const db = require('./db/db')
-const express = require("express")
-const app = express();
+const http = require('http');
+const app = require('./app');
+const dotenv = require('dotenv')
 
-//connection to database.
-db()
-//middleware
-app.use(express.json())
+dotenv.config()
 
-app.use((req,res,next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    next();
-})
+const NormalizePort = value => {
+    const port = parseInt(value,10);
 
-/**ROUTES
-//POST
+    if(isNaN(port)) {
+        return value
+    }
+    if (port >= 0) {
+        return port
+    }
+    return false;
+};
 
-app.post('/api/auth/signup', (req, res) => {
-    res.status(200).json({message: 'signup post'})
-})
-app.post('/api/auth/login', (req, res) => {
-    res.status(200).json({message: 'Login post'})
-})
-app.post('/api/sauces', (req, res) => {
-    res.status(200).json({message: 'sauce post'})
-})
-//POST (LIKE)
-app.post('api/sauces/:id/like', (req, res) => {
-    res.status(200).json({message: 'Like post'})
-})
-//GET
-app.get('api/sauces', (req, res) => {
-    res.status(200).json({message: 'sauces get'})
-})
-app.get('api/sauces/:id', (req, res) => {
-    res.status(200).json({message: 'sauce get'})
-})
-//PUT
-app.put('api/sauces/:id', (req, res) => {
-    res.status(200).json({message: 'sauce put'})
-})
-//DELETE
-app.delete('api/sauces/:id', (req, res) => {
-    res.status(200).json({message: 'sauce delete'})
-})
-app.get('/', (req, res) => {
-    res.json({message: 'text'})
-})
- */
-app.listen(3000, () => {
-    console.log("server is rtunning in port 3000")
-})
+const port = NormalizePort(process.env.PORT);
 
+app.set('port', port);
 
+const handleError = error => {
+    if(error.syscall !== 'listen') {
+        throw error
+    }
 
+    const address = server.address();
+    const bind = typeof address === 'string' ? 'pipe' + address : 'port' + port;
+
+    switch (error.code) {
+        case 'EACCES':
+            console.error(bind + ' requires elevated privileges.');
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(bind + ' is already in use.');
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
+};
+
+const server = http.createServer(app);
+
+server.on('error', handleError);
+server.on('listening', () => {
+    const address = server.address();
+    const bind = typeof address === 'string' ? 'pipe' + address : 'port' + port;
+
+    console.log('linstening on ' + bind);
+});
+
+server.listen(port);
