@@ -1,28 +1,41 @@
 const SauceModal = require('../model/sauce.model');
 
-
-exports.createSauce = (req, res, next) => {
-    const sauce = JSON.parse(req.body.sauce);
-    delete sauce._id;
-    const sauceObject = new SauceModal({
-        ...sauce,
+exports.createSauce = async (req, res, next) => {
+    //create a new sauce with the data from the request
+    //parse the stringified data from the request
+    const sauceObject = await JSON.parse(req.body.sauce);
+    //delete the id from the request
+    delete await sauceObject._id;
+    /**
+     * Le point important ici est que notre type
+     * de données pour l'image est un Buffer qui nous
+     * permet de stocker notre image comme des données sous forme de tableaux.
+     */
+    const  sauce = await new SauceModal({
+        ...sauceObject,
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-        likes: 0, // Initialise le nombre de likes à 0
-        dislikes: 0, // Initialise le nombre de dislikes à 0
-        usersLiked: [], // Crée un array qui contiendra le nom des utilisateurs ayant like.
-        usersDisliked: [] // Crée un array qui contiendra le nom des utilisateurs ayant dislike.
-    })
-    sauceObject.save()
+        likes: 0,
+        dislikes: 0,
+        usersLiked: [],
+        usersDisliked: []
+    });
+    sauce.save()
         .then(() => res.status(201).json({message: 'Sauce created!'}))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => res.status(400).json({error}))
 }
 exports.getAllSauces = (req, res, next) => {
-    SauceModal.find()
-        .then(sauces => res.status(200).json(sauces))
-        .catch(error => res.status(400).json({error}));
+    SauceModal.find({}, (err, sauces) => {
+        if(err) {
+            console.log(err);
+            return res.status(400).json({err});
+        }
+        return res.status(200).json(sauces);
+    })
 }
 exports.getOneSauce = (req, res, next) => {
-
+    SauceModal.findOne({_id: req.params.id})
+        .then(sauce => res.status(200).json(sauce))
+        .catch(error => res.status(404).json({error}))
 }
 exports.modifySauce = (req, res, next) => {
 
