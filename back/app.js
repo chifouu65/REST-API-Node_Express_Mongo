@@ -1,12 +1,12 @@
 const express = require('express');
 const app = express()
 const db = require('./db')
+const path = require('path');
 //routes import
 const authRouter = require('./routes/user')
 const sauceRouter = require('./routes/sauce')
 //MongoDB connection
 db();
-//middleware
 app.use(express.json());
 app.use('/', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,5 +17,7 @@ app.use('/', (req, res, next) => {
 //routes
 app.use("/api/auth", authRouter);
 app.use("/api/sauces", sauceRouter);
+//routes for images
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 module.exports = app;
