@@ -80,17 +80,84 @@ exports.deleteSauce = (req, res, next) => {
     })
     .catch(error => res.status(500).json({error}))
 }
+/**Définit le statut « Like » pour
+ l' userId fourni.
+ Si like = 1,l'utilisateur aime (= like) lasauce.
+ Si like = 0, l'utilisateur annule son like ou son dislike.
+ Si like = -1, l'utilisateur n'aime pas (= dislike) la sauce. L'ID de l'utilisateur doit être ajouté ou retiré du tableau approprié.
 
+ Cela permet de garder une trace de leurs préférences et les empêche
+ de liker ou de ne pas disliker la même sauce plusieurs fois : un utilisateur ne peut
+ avoir qu'une seule valeur
+ pour chaque sauce. Le
+ nombre total de « Like » et
+ de « Dislike » est mis à jour à
+ chaque nouvelle notation.
+ */
+
+/**
+ * @param {Object}
+ * @like {Number}
+ * //if like = 1, the user likes the sauce
+ * //if like = 0, the user cancels his like or dislike
+ * //if like = -1, the user doesn't like the sauce
+ * //if user like or dislike the sauce, the id of the user must be added or removed from the appropriate array
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.likeSauce = (req, res, next) => {
   const like = req.body.like;
   const userId = req.body.userId;
   const sauceId = req.params.id;
   SauceModal.findOne({_id: sauceId})
-    .then(sauce => {
-      sauce.save().then(r => {
-        console.log(('product saved'))
-      })
-    })
-    .catch(error => res.status(500).json({error}))
 
+    .then(sauce => {
+      /**      if (like === 1) {
+        SauceModal.updateOne({_id: sauceId}, {
+            $inc: {likes: +1},
+            $push: {usersLiked: userId},
+            _id: sauceId
+          }
+        ).then(() => res.status(200).json({message: 'Sauce liked!'}))
+          .catch(error => res.status(400).json({error}))
+      } else if (like === -1) {
+        SauceModal.updateOne({_id: sauceId}, {
+            $inc: {dislikes: +1},
+            $push: {usersDisliked: userId},
+            _id: sauceId
+          }
+        ).then(() => res.status(200).json({message: 'Sauce disliked!'}))
+          .catch(error => res.status(400).json({error}))
+      } else {
+        SauceModal.updateOne({_id: sauceId}, {
+            likes: -1,
+            $pull: {usersDisliked: userId},
+            _id: sauceId
+        })
+      } */
+      try {
+        switch (like) {
+          case 1:
+            SauceModal.updateOne({_id: sauceId}, {$inc: {likes: +1}, $push: {usersLiked: userId}, _id: sauceId})
+              .then(() => res.status(200).json({message: 'Sauce liked!'}))
+              .catch(error => res.status(400).json({error}))
+            break
+          case 0:
+            if (sauce.usersLiked.includes(userId)) {
+              SauceModal.updateOne({_id: sauceId}, {$inc: {likes: -1}, $pull: {usersLiked: userId}, _id: sauceId})
+                .then(() => res.status(200).json({message: 'Sauce unliked!'}))
+                .catch(error => res.status(400).json({error}))
+            }
+            break
+          case -1:
+            SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: +1}, $push: {usersDisliked: userId}, _id: sauceId})
+              .then(() => res.status(200).json({message: 'Sauce disliked!'}))
+              .catch(error => res.status(400).json({error}))
+            break
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    })
 }
