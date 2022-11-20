@@ -6,11 +6,6 @@ exports.createSauce = async (req, res, next) => {
   const sauceObject = await JSON.parse(req.body.sauce);
   //delete the id from the request
   delete await sauceObject._id;
-  /**https://www.geeksforgeeks.org/upload-and-retrieve-image-on-mongodb-using-mongoose/
-   * Le point important ici est que notre type
-   * de données pour l'image est un Buffer qui nous
-   * permet de stocker notre image comme des données sous forme de tableaux.
-   */
   const sauce = await new SauceModal({
     ...sauceObject,
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
@@ -94,7 +89,6 @@ exports.deleteSauce = (req, res, next) => {
  de « Dislike » est mis à jour à
  chaque nouvelle notation.
  */
-
 /**
  * @param {Object}
  * @like {Number}
@@ -113,51 +107,42 @@ exports.likeSauce = (req, res, next) => {
   SauceModal.findOne({_id: sauceId})
 
     .then(sauce => {
-      /**      if (like === 1) {
-        SauceModal.updateOne({_id: sauceId}, {
-            $inc: {likes: +1},
-            $push: {usersLiked: userId},
-            _id: sauceId
-          }
-        ).then(() => res.status(200).json({message: 'Sauce liked!'}))
-          .catch(error => res.status(400).json({error}))
-      } else if (like === -1) {
-        SauceModal.updateOne({_id: sauceId}, {
-            $inc: {dislikes: +1},
-            $push: {usersDisliked: userId},
-            _id: sauceId
-          }
-        ).then(() => res.status(200).json({message: 'Sauce disliked!'}))
-          .catch(error => res.status(400).json({error}))
-      } else {
-        SauceModal.updateOne({_id: sauceId}, {
-            likes: -1,
-            $pull: {usersDisliked: userId},
-            _id: sauceId
-        })
-      } */
       try {
         switch (like) {
           case 1:
+            console.log('like');
             SauceModal.updateOne({_id: sauceId}, {$inc: {likes: +1}, $push: {usersLiked: userId}, _id: sauceId})
               .then(() => res.status(200).json({message: 'Sauce liked!'}))
               .catch(error => res.status(400).json({error}))
             break
           case 0:
             if (sauce.usersLiked.includes(userId)) {
+              console.log('cancel like');
               SauceModal.updateOne({_id: sauceId}, {$inc: {likes: -1}, $pull: {usersLiked: userId}, _id: sauceId})
                 .then(() => res.status(200).json({message: 'Sauce unliked!'}))
+                .catch(error => res.status(400).json({error}))
+            } else {
+              console.log('cancel dislike');
+              SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: -1}, $pull: {usersDisliked: userId}, _id: sauceId})
+                .then(() => res.status(200).json({message: 'Sauce undisliked!'}))
                 .catch(error => res.status(400).json({error}))
             }
             break
           case -1:
-            SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: +1}, $push: {usersDisliked: userId}, _id: sauceId})
-              .then(() => res.status(200).json({message: 'Sauce disliked!'}))
-              .catch(error => res.status(400).json({error}))
-            break
+            console.log('dislike');
+            if(!sauce.usersDisliked.includes(userId)){
+              SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: +1}, $push: {usersDisliked: userId}, _id: sauceId})
+                .then(() => res.status(200).json({message: 'Sauce disliked!'}))
+                .catch(error => res.status(400).json({error}))
+              break
+            } else {
+              console.log('already disliked');
+              break
+            }
         }
       } catch (e) {
         console.log(e)
       }
     })
 }
+
