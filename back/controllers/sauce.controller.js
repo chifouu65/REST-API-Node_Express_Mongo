@@ -41,9 +41,7 @@ exports.modifySauce = (req, res, next) => {
       .then(sauce => {
         //PATH DE BASE
         const filename = sauce.imageUrl.split('/images/')[1];
-        console.log('filename', filename);
         fs.unlink(`images/${filename}`, () => {
-          console.log(`image: ${filename} deleted`);
         })
         //PATH DE LA NEW IMG
         const newPath = req.file.filename
@@ -98,26 +96,22 @@ exports.likeSauce = (req, res, next) => {
       try {
         switch (like) {
           case 1:
-            console.log('like');
             SauceModal.updateOne({_id: sauceId}, {$inc: {likes: +1}, $push: {usersLiked: userId}, _id: sauceId})
               .then(() => res.status(200).json({message: 'Sauce liked!'}))
               .catch(error => res.status(400).json({error}))
             break
           case 0:
             if (sauce.usersLiked.includes(userId)) {
-              console.log('cancel like');
               SauceModal.updateOne({_id: sauceId}, {$inc: {likes: -1}, $pull: {usersLiked: userId}, _id: sauceId})
                 .then(() => res.status(200).json({message: 'Sauce unliked!'}))
                 .catch(error => res.status(400).json({error}))
             } else {
-              console.log('cancel dislike');
               SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: -1}, $pull: {usersDisliked: userId}, _id: sauceId})
                 .then(() => res.status(200).json({message: 'Sauce undisliked!'}))
                 .catch(error => res.status(400).json({error}))
             }
             break
           case -1:
-            console.log('dislike');
             if(!sauce.usersDisliked.includes(userId)){
               SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: +1}, $push: {usersDisliked: userId}, _id: sauceId})
                 .then(() => res.status(200).json({message: 'Sauce disliked!'}))
@@ -129,7 +123,7 @@ exports.likeSauce = (req, res, next) => {
             }
         }
       } catch (e) {
-        console.log(e)
+        res.status(400).json({error: e})
       }
     })
 }

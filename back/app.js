@@ -26,4 +26,14 @@ const middleware = require('./middleware/middleware')
 app.use(middleware.notFound);
 app.use(middleware.errorHandler);
 
+//if file images is not found in the server then it will be created
+const fs = require('fs');
+const dir = './images';
+if (!fs.existsSync(dir)) {
+  console.log('creating images folder');
+  fs.mkdirSync(dir);
+} else {
+  console.log('images folder already exists');
+}
+
 module.exports = app;
