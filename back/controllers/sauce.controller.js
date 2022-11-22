@@ -1,12 +1,13 @@
 const SauceModal = require('../model/sauce.model');
 const fs = require('fs');
-exports.createSauce = async (req, res, next) => {
+
+exports.createSauce = (req, res, next) => {
   //create a new sauce with the data from the request
   //parse the stringified data from the request
-  const sauceObject = await JSON.parse(req.body.sauce);
+  const sauceObject = JSON.parse(req.body.sauce);
   //delete the id from the request
-  delete await sauceObject._id;
-  const sauce = await new SauceModal({
+  delete sauceObject._id;
+  const sauce = new SauceModal({
     ...sauceObject,
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
     likes: 0,
@@ -75,20 +76,7 @@ exports.deleteSauce = (req, res, next) => {
     })
     .catch(error => res.status(500).json({error}))
 }
-/**Définit le statut « Like » pour
- l' userId fourni.
- Si like = 1,l'utilisateur aime (= like) lasauce.
- Si like = 0, l'utilisateur annule son like ou son dislike.
- Si like = -1, l'utilisateur n'aime pas (= dislike) la sauce. L'ID de l'utilisateur doit être ajouté ou retiré du tableau approprié.
 
- Cela permet de garder une trace de leurs préférences et les empêche
- de liker ou de ne pas disliker la même sauce plusieurs fois : un utilisateur ne peut
- avoir qu'une seule valeur
- pour chaque sauce. Le
- nombre total de « Like » et
- de « Dislike » est mis à jour à
- chaque nouvelle notation.
- */
 /**
  * @param {Object}
  * @like {Number}

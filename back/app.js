@@ -17,7 +17,6 @@ app.use('/', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     next();
 })
-
 //routes
 app.use("/api/auth", authRouter);
 app.use("/api/sauces", sauceRouter);
@@ -26,6 +25,5 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 const middleware = require('./middleware/middleware')
 app.use(middleware.notFound);
 app.use(middleware.errorHandler);
-
 
 module.exports = app;

@@ -49,7 +49,7 @@ server.on('listening', () => {
     const address = server.address();
     const bind = typeof address === 'string' ? 'pipe' + address : 'port' + port;
 
-    console.log('linstening on ' + bind);
+    console.log('listening on ' + bind);
 });
 
 server.listen(port);
