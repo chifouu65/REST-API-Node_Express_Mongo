@@ -2,11 +2,14 @@ const express = require('express');
 const app = express()
 const db = require('./db')
 const path = require('path');
+const cors = require('cors');
+
 //routes import
 const authRouter = require('./routes/user')
 const sauceRouter = require('./routes/sauce')
 //MongoDB connection
 db();
+app.use(cors());
 app.use(express.json());
 app.use('/', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,10 +17,15 @@ app.use('/', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     next();
 })
+
 //routes
 app.use("/api/auth", authRouter);
 app.use("/api/sauces", sauceRouter);
-//routes for images
 app.use("/images", express.static(path.join(__dirname, "images")));
+//middleware
+const middleware = require('./middleware/middleware')
+app.use(middleware.notFound);
+app.use(middleware.errorHandler);
+
 
 module.exports = app;
