@@ -62,6 +62,12 @@ exports.modifySauce = (req, res, next) => {
 
 }
 
+/**
+ * if product is removed, the image must be removed from the server
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.deleteSauce = (req, res, next) => {
   SauceModal.findOne({_id: req.params.id})
     .then(sauce => {
