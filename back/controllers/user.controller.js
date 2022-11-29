@@ -1,4 +1,4 @@
-const UserModal = require('../model/user.model');
+const UserModal = require('../models/user.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
@@ -54,8 +54,3 @@ exports.login = (req, res, next) => {
         .catch(error => res.status(500).json({error}));
 }
 
-exports.getAllUsers = (req, res, next) => {
-    UserModal.find()
-        .then(users => res.status(200).json(users))
-        .catch(error => res.status(400).json({error}));
-}

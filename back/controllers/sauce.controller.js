@@ -1,4 +1,4 @@
-const SauceModal = require('../model/sauce.model');
+const SauceModal = require('../models/sauce.model');
 const fs = require('fs');
 
 exports.createSauce = (req, res, next) => {
