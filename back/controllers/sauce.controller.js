@@ -3,10 +3,7 @@ const fs = require('fs');
 
 exports.createSauce = (req, res, next) => {
   //create a new sauce with the data from the request
-  //parse the stringified data from the request
   const sauceObject = JSON.parse(req.body.sauce);
-  //delete the id from the request
-  delete sauceObject._id;
   const sauce = new SauceModal({
     ...sauceObject,
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
@@ -19,8 +16,8 @@ exports.createSauce = (req, res, next) => {
     .then(() => res.status(201).json({message: 'Sauce created!'}))
     .catch(error => res.status(400).json({error}))
 }
-exports.getAllSauces = (req, res, next) => {
-  SauceModal.find({}, (err, sauces) => {
+exports.getAllSauces = (req, res) => {
+  SauceModal.find((err, sauces) => {
     if (err) {
       console.log(err);
       return res.status(400).json({err});
@@ -28,7 +25,7 @@ exports.getAllSauces = (req, res, next) => {
     return res.status(200).json(sauces);
   })
 }
-exports.getOneSauce = (req, res, next) => {
+exports.getOneSauce = (req, res) => {
   SauceModal.findOne({_id: req.params.id})
     .then(sauce => res.status(200).json(sauce))
     .catch(error => res.status(404).json({error}))
@@ -41,7 +38,9 @@ exports.modifySauce = (req, res, next) => {
       .then(sauce => {
         //PATH DE BASE
         const filename = sauce.imageUrl.split('/images/')[1];
+        //remove last image
         fs.unlink(`images/${filename}`, () => {
+          console.log(filename + ' removed')
         })
         //PATH DE LA NEW IMG
         const newPath = req.file.filename
@@ -123,10 +122,7 @@ exports.likeSauce = (req, res, next) => {
                 .then(() => res.status(200).json({message: 'Sauce disliked!'}))
                 .catch(error => res.status(400).json({error}))
               break
-            } else {
-              console.log('already disliked');
-              break
-            }
+            } 
         }
       } catch (e) {
         res.status(400).json({error: e})
