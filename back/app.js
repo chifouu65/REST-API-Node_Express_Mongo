@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express()
-const db = require('./db')
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
@@ -8,8 +7,16 @@ const middleware = require('./middleware/middleware')
 //routes import
 const authRouter = require('./routes/user')
 const sauceRouter = require('./routes/sauce')
-//MongoDB connection
+//MongoDB
+const db = require('./db')
 db();
+/**
+ * Middleware
+ * cors : permet de gérer les erreurs de CORS
+ * (Cross Origin Resource Sharing)
+ * express.json : permet de parser le corps des
+ * requêtes reçues et de les rendre accessibles dans req.body
+ */
 app.use(cors());
 app.use(express.json());
 app.use('/', (req, res, next) => {
@@ -18,15 +25,20 @@ app.use('/', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   next();
 })
-//routes
+/**
+ * Routes
+ * authRouter : route pour authentication
+ * sauceRouter : route pour les sauces
+ * middleware : route pour les images
+ */
 app.use("/api/auth", authRouter);
 app.use("/api/sauces", sauceRouter);
 app.use("/images", express.static(path.join(__dirname, "images")));
-//middleware
+//middleware qui gère les erreurs
 app.use(middleware.notFound);
 app.use(middleware.errorHandler)
-
-//if file images is not found in the server then it will be created
+//if file 'images' is not found in the server
+// then it will be created
 const dir = './images';
 if (!fs.existsSync(dir)) {
   fs.mkdirSync(dir);
