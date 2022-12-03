@@ -1,11 +1,8 @@
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
-
 /**
- * @description Middleware to check if the user
- * is authenticated before allowing access to the routes
- * width token verification
+ * @description Middleware to check if the user is authenticated
  * @param req // req (token) from the client
  * @param res // res (error message) to the client
  * @param next // next (function) to the next middleware

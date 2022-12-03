@@ -4,16 +4,15 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const middleware = require('./middleware/middleware')
-//routes import
 const authRouter = require('./routes/user')
 const sauceRouter = require('./routes/sauce')
+
 //MongoDB
 const db = require('./db')
 db();
 /**
  * Middleware
- * cors : permet de gérer les erreurs de CORS
- * (Cross Origin Resource Sharing)
+ * cors : def : Cross-Origin Resource Sharing
  * express.json : permet de parser le corps des
  * requêtes reçues et de les rendre accessibles dans req.body
  */
@@ -29,11 +28,11 @@ app.use('/', (req, res, next) => {
  * Routes
  * authRouter : route pour authentication
  * sauceRouter : route pour les sauces
- * middleware : route pour les images
  */
 app.use("/api/auth", authRouter);
 app.use("/api/sauces", sauceRouter);
 app.use("/images", express.static(path.join(__dirname, "images")));
+
 //middleware qui gère les erreurs
 app.use(middleware.notFound);
 app.use(middleware.errorHandler)
