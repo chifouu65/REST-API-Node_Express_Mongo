@@ -4,8 +4,9 @@ const fs = require('fs');
 exports.createSauce = (req, res, next) => {
   //get Object from the request and parse it to JSON format
   const sauceObject = JSON.parse(req.body.sauce);
+  //remove the _id from the request
+  delete req.body._id;
   //create a new instance of SauceModal (model)
-  //and pass the object to it (sauceObject)
   const sauce = new SauceModal({
     ...sauceObject,
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
@@ -63,14 +64,14 @@ exports.modifySauce = (req, res, next) => {
     SauceModal.findOne({_id: req.params.id})
       .then(sauce => {
         const filename = sauce.imageUrl.split('/images/')[1];
+        //remove the old image from the server
         fs.unlink(`images/${filename}`, () => {
           console.log(filename + ' removed')
         })
         const newPath = req.file.filename
         SauceModal.updateOne({_id: req.params.id}, {
           ...req.body,
-          imageUrl: `${req.protocol}://${req.get('host')}/images/${newPath}`
-        })
+          imageUrl: `${req.protocol}://${req.get('host')}/images/${newPath}`})
           .then(() => res.status(200).json({message: 'Sauce & img updated!'}))
           .catch(error => res.status(400).json({error}))
       })
@@ -119,13 +120,23 @@ exports.likeSauce = (req, res, next) => {
 
         switch (like) {
           case 1:
-            SauceModal.updateOne({_id: sauceId}, {$inc: {likes: +1}, $push: {usersLiked: userId}, _id: sauceId})
+            SauceModal.updateOne({_id: sauceId},
+              {
+                $inc: {likes: +1},
+                $push: {usersLiked: userId},
+                _id: sauceId
+              })
               .then(() => res.status(200).json({message: 'Sauce liked!'}))
               .catch(error => res.status(400).json({error}))
             break
           case 0:
             if (sauce.usersLiked.includes(userId)) {
-              SauceModal.updateOne({_id: sauceId}, {$inc: {likes: -1}, $pull: {usersLiked: userId}, _id: sauceId})
+              SauceModal.updateOne({_id: sauceId},
+                {
+                  $inc: {likes: -1},
+                  $pull: {usersLiked: userId},
+                  _id: sauceId
+                })
                 .then(() => res.status(200).json({message: 'Sauce unliked!'}))
                 .catch(error => res.status(400).json({error}))
             } else {
@@ -136,7 +147,12 @@ exports.likeSauce = (req, res, next) => {
             break
           case -1:
             if (!sauce.usersDisliked.includes(userId)) {
-              SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: +1}, $push: {usersDisliked: userId}, _id: sauceId})
+              SauceModal.updateOne({_id: sauceId},
+                {
+                  $inc: {dislikes: +1},
+                  $push: {usersDisliked: userId},
+                  _id: sauceId
+                })
                 .then(() => res.status(200).json({message: 'Sauce disliked!'}))
                 .catch(error => res.status(400).json({error}))
               break
