@@ -12,12 +12,12 @@ const db = require('./db')
 db();
 /**
  * Middleware
- * cors : def : Cross-Origin Resource Sharing
  * express.json : permet de parser le corps des
  * requêtes reçues et de les rendre accessibles dans req.body
  */
 app.use(cors());
 app.use(express.json());
+//cors middleware
 app.use('/', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
