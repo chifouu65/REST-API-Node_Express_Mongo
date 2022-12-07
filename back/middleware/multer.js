@@ -1,7 +1,7 @@
 const multer = require('multer')
-
 /**
- * @type {{"image/png": string, "image/jpeg": string, "image/jpg": string}}
+ * Permet de gerer le chemin de stockage des images
+ * et de les renommer avec un nom unique
  */
 const MIME_TYPES = { // types MIME acceptés
   'image/jpg': 'jpg',

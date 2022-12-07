@@ -4,7 +4,7 @@ const fs = require('fs');
 exports.createSauce = (req, res, next) => {
   //get Object from the request and parse it to JSON format
   const sauceObject = JSON.parse(req.body.sauce);
-  //remove the _id from the request
+  //remove the auto-generate _id from the request
   delete req.body._id;
   //create a new instance of SauceModal (model)
   const sauce = new SauceModal({
@@ -49,7 +49,7 @@ exports.getOneSauce = (req, res) => {
 }
 
 /**
- * @function update a sauce in the database
+ * update a sauce in the database
  * if req contains a file,
  * get file path and delete the old image from the server
  * get the new image path from REQ
@@ -60,15 +60,19 @@ exports.getOneSauce = (req, res) => {
  */
 exports.modifySauce = (req, res, next) => {
   const sauceObject = req.file
+  //if req contains a file
   if (sauceObject) {
     SauceModal.findOne({_id: req.params.id})
       .then(sauce => {
+        //get name of the old image
         const filename = sauce.imageUrl.split('/images/')[1];
         //remove the old image from the server
         fs.unlink(`images/${filename}`, () => {
           console.log(filename + ' removed')
         })
+        //get the new image path from REQ
         const newPath = req.file.filename
+        //update the sauce in the database
         SauceModal.updateOne({_id: req.params.id}, {
           ...req.body,
           imageUrl: `${req.protocol}://${req.get('host')}/images/${newPath}`})
@@ -76,15 +80,17 @@ exports.modifySauce = (req, res, next) => {
           .catch(error => res.status(400).json({error}))
       })
   }
+  //else req doesn't contain a file
   else {
-    SauceModal.updateOne({_id: req.params.id}, {...req.body})
+    SauceModal.updateOne({_id: req.params.id},
+      {...req.body})
       .then(() => res.status(200).json({message: 'Sauce updated!'}))
       .catch(error => res.status(400).json({error}))
   }
 }
 
 /**
- * @function delete a sauce from the database
+ * delete a sauce from the database
  * find product by id
  * get the image path from the database for remove it from the server
  * remove image from the server and the sauce Object from the database
@@ -102,23 +108,15 @@ exports.deleteSauce = (req, res, next) => {
     .catch(error => res.status(500).json({error}))
 }
 
-/**
- * @like {Number}
- * //if like = 1, the user likes the sauce
- * //if like = 0, the user cancels his like or dislike
- * //if like = -1, the user doesn't like the sauce
- * //if user like or dislike the sauce, the id of the user must be added or removed from the appropriate array
- */
 exports.likeSauce = (req, res, next) => {
   const like = req.body.like;
   const userId = req.body.userId;
   const sauceId = req.params.id;
   SauceModal.findOne({_id: sauceId})
-
     .then(sauce => {
       try {
-
         switch (like) {
+          //if like = 1 => add userId to usersLiked array and increment likes
           case 1:
             SauceModal.updateOne({_id: sauceId},
               {
@@ -129,7 +127,9 @@ exports.likeSauce = (req, res, next) => {
               .then(() => res.status(200).json({message: 'Sauce liked!'}))
               .catch(error => res.status(400).json({error}))
             break
+          //if like = -1 => add userId to usersDisliked array and increment dislikes
           case 0:
+            //check if the user is in usersLiked array
             if (sauce.usersLiked.includes(userId)) {
               SauceModal.updateOne({_id: sauceId},
                 {
@@ -139,12 +139,17 @@ exports.likeSauce = (req, res, next) => {
                 })
                 .then(() => res.status(200).json({message: 'Sauce unliked!'}))
                 .catch(error => res.status(400).json({error}))
+              //else add userId to usersDisliked array and increment dislikes
             } else {
-              SauceModal.updateOne({_id: sauceId}, {$inc: {dislikes: -1}, $pull: {usersDisliked: userId}, _id: sauceId})
+              SauceModal.updateOne({_id: sauceId},
+                {$inc: {dislikes: -1},
+                  $pull: {usersDisliked: userId},
+                  _id: sauceId})
                 .then(() => res.status(200).json({message: 'Sauce undisliked!'}))
                 .catch(error => res.status(400).json({error}))
             }
             break
+          //if like = -1 => add userId to usersDisliked array and increment dislikes
           case -1:
             if (!sauce.usersDisliked.includes(userId)) {
               SauceModal.updateOne({_id: sauceId},
